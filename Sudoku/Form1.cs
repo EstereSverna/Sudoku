@@ -12,7 +12,7 @@ namespace Sudoku
 {
     public partial class Form1 : Form
     {
-        private int c;
+        private int c = 4;
         private Cell[,] cells;
         public Form1()
         {
@@ -23,14 +23,6 @@ namespace Sudoku
 
         private void CreateCells()
         {
-            if(radioButton1.Checked)
-            {
-                c = 4;
-            }
-            else if(radioButton2.Checked)
-            {
-                c = 9;
-            }
             cells = new Cell[c, c];
             for (int i = 0; i < c; i++)
             {
@@ -183,5 +175,21 @@ namespace Sudoku
                 }
             }
         }
-    }
+
+        private void NewGame_Click(object sender, EventArgs e)
+        {
+            panel1.Invalidate();
+            if (radioButton1.Checked)
+            {
+                c = 4;
+            }
+            else if (radioButton2.Checked)
+            {
+                c = 9;
+            }
+
+            CreateCells();
+            NewGame();
+        }
+        }
 }
