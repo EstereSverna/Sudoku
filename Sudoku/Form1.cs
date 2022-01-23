@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Sudoku
 {
     public partial class Form1 : Form
     {
-        private int c = 4;
-        private Cell[,] cells;
+        Cell[,] cells= new Cell[9, 9];
+        readonly Random random = new Random();
         public Form1()
         {
             InitializeComponent();
@@ -23,10 +19,9 @@ namespace Sudoku
 
         private void CreateCells()
         {
-            cells = new Cell[c, c];
-            for (int i = 0; i < c; i++)
+            for (int i = 0; i < 9; i++)
             {
-                for (int j = 0; j < c; j++)
+                for (int j = 0; j < 9; j++)
                 {
                     cells[i, j] = new Cell();
                     cells[i, j].Font = new Font(SystemFonts.DefaultFont.FontFamily, 20);
@@ -34,10 +29,6 @@ namespace Sudoku
                     cells[i, j].Location = new Point(i * 40, j * 40);
                     cells[i, j].FlatStyle = FlatStyle.Flat;
                     cells[i, j].FlatAppearance.BorderColor = Color.Black;
-                    cells[i, j].X = i;
-                    cells[i, j].Y = j;
-                    cells[i, j].KeyPress += KeyPressed;
-
                     panel1.Controls.Add(cells[i, j]);
                 }
             }
@@ -62,55 +53,111 @@ namespace Sudoku
 
         private void NewGame()
         {
-            foreach (var cell in cells)
+            findValueForNextCell(0, -1);
+            var numbers = new List<int> { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+
+            if (radioButton1.Checked)
             {
-                cell.Clear();
+                for (int n = 0; n < 20; n++)
+                {
+                    int r = numbers[random.Next(0, numbers.Count)];
+                    int p = numbers[random.Next(0, numbers.Count)];
+                    cells[r, p].Text = String.Empty;
+                    if (IsSolvable())
+                    {
+                        cells[r, p].KeyPress += KeyPressed;
+                        cells[r, p].IsLocked = false;
+                    }
+                    else
+                    {
+                        cells[r, p].Text = cells[r, p].Value.ToString();
+                    }
+                }
+            }
+        
+
+            if(radioButton2.Checked)
+            {  
+                for (int n = 0; n < 50; n++)
+                { 
+                int r = numbers[random.Next(0, numbers.Count)];
+                int p = numbers[random.Next(0, numbers.Count)];
+                cells[r, p].Text = String.Empty;
+                    if (IsSolvable())
+                    {
+                        cells[r, p].KeyPress += KeyPressed;
+                        cells[r, p].IsLocked = false;
+                    }
+                    else
+                    {
+                        cells[r, p].Text = cells[r, p].Value.ToString();
+                    }
+                    }
+                } 
             }
 
-            do
-            { 
-                findValueForNextCell(0, 0);
+        private bool IsSolvable()
+        {
+            int count = 0;
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    if (cells[i, j].Text == String.Empty)
+                    {
+                        for (int m = 1; m <= 9; m++)
+                        {
+                            if (IsValidNumber(m, i, j))
+                            {
+                                count++;
+                            }
+                        }
+                        if (count == 1)
+                            return true;
+                    }
+                    count = 0;
+                }
             }
-            while (false);
+            return false;
 
         }
-
-        Random random = new Random();
-
         private bool findValueForNextCell(int i, int j)
         {
-            var numsLeft = new List<int>();
+            if (++j > 8)
+            {
+                j = 0;
 
-            for (i = 0; i < c; i++)
-            { 
-                for (int n = 1; n <= c; n++)
-                {
-                    numsLeft.Add(n);
-                }
-
-                for (j = 0; j < c; j++)
-                {
-                    int value;
-                    do
-                    {
-                        value = numsLeft[random.Next(0, numsLeft.Count)];
-                        if (IsValidNumber(value, i, j))
-                        {
-                            cells[i, j].Value = value;
-                            cells[i, j].Text = value.ToString();
-                        }
-                    } while (!IsValidNumber(value, i, j));
-
-
-                    numsLeft.Remove(value);
-                }
+                if (++i > 8)
+                    return true;
             }
+
+            var numsLeft = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            int value;
+
+            do
+            {
+                if (numsLeft.Count < 1)
+                {
+                    cells[i, j].Value = 0;
+                    return false;
+                }
+
+                value = numsLeft[random.Next(0, numsLeft.Count)];
+
+                cells[i, j].Value = value;
+                cells[i, j].Text = value.ToString();
+                cells[i, j].IsLocked = true;
+
+                numsLeft.Remove(value);
+            }
+            while (!IsValidNumber(value, i, j) || !findValueForNextCell(i, j));
+
             return true;
-            }
+        }
 
         private bool IsValidNumber(int value, int x, int y)
         {
-            for (int i = 0; i < c; i++)
+            for (int i = 0; i < 9; i++)
             {
                 if (i != y && cells[x, i].Value == value)
                     return false;
@@ -119,15 +166,14 @@ namespace Sudoku
                     return false;
             }
 
-            for (int i = x - (x % (int)Math.Sqrt(c)); i < x - (x % (int)Math.Sqrt(c)) + (int)Math.Sqrt(c); i++)
+            for (int i = x - (x % 3); i < x - (x % 3) + 3; i++)
             {
-                for (int j = y - (y % (int)Math.Sqrt(c)); j < y - (y % (int)Math.Sqrt(c)) + (int)Math.Sqrt(c); j++)
+                for (int j = y - (y % 3); j < y - (y % 3) + 3; j++)
                 {
                     if (i != x && j != y && cells[i, j].Value == value)
                         return false;
                 }
             }
-
             return true;
         }
 
@@ -145,7 +191,6 @@ namespace Sudoku
 
             if (wrongCells.Any())
             {
-
                 wrongCells.ForEach(x => x.ForeColor = Color.Red);
                 MessageBox.Show("Wrong inputs are marked in red");
             }
@@ -160,7 +205,9 @@ namespace Sudoku
             foreach (var cell in cells)
             {
                 if (cell.IsLocked == false)
+                {
                     cell.Clear();
+                }
             }
         }
 
@@ -168,9 +215,9 @@ namespace Sudoku
         {
             foreach (var cell in cells)
             {
-                if (cell.IsLocked)
+                if (!cell.IsLocked)
                 {
-                    cell.IsLocked = false;
+                    cell.Text = cell.Value.ToString();
                     cell.ForeColor = Color.Blue;
                 }
             }
@@ -178,18 +225,12 @@ namespace Sudoku
 
         private void NewGame_Click(object sender, EventArgs e)
         {
-            panel1.Invalidate();
-            if (radioButton1.Checked)
+            foreach (var cell in cells)
             {
-                c = 4;
-            }
-            else if (radioButton2.Checked)
-            {
-                c = 9;
+                cell.Clear();
             }
 
-            CreateCells();
             NewGame();
         }
-        }
+    }
 }
