@@ -8,8 +8,9 @@ namespace Sudoku
 {
     public partial class Form1 : Form
     {
-        Cell[,] cells= new Cell[9, 9];
+        Cell[,] cells = new Cell[9, 9];
         readonly Random random = new Random();
+        int showSolutionCount = 0;
         public Form1()
         {
             InitializeComponent();
@@ -27,8 +28,17 @@ namespace Sudoku
                     cells[i, j].Font = new Font(SystemFonts.DefaultFont.FontFamily, 20);
                     cells[i, j].Size = new Size(40, 40);
                     cells[i, j].Location = new Point(i * 40, j * 40);
-                    cells[i, j].FlatStyle = FlatStyle.Flat;
-                    cells[i, j].FlatAppearance.BorderColor = Color.Black;
+                    cells[i, j].ForeColor = Color.DarkMagenta;
+
+                    if (((i / 3) + (j / 3)) % 2 == 0)
+                    {
+                        cells[i, j].BackColor = Color.RosyBrown;
+                    }
+                    else
+                    {
+                        cells[i, j].BackColor = Color.LightSteelBlue;
+                    }
+
                     panel1.Controls.Add(cells[i, j]);
                 }
             }
@@ -43,7 +53,7 @@ namespace Sudoku
             {
                 return;
             }
-            else 
+            else
             {
                 int.TryParse(e.KeyChar.ToString(), out value);
                 cell.Text = value.ToString();
@@ -53,7 +63,7 @@ namespace Sudoku
 
         private void NewGame()
         {
-            findValueForNextCell(0, -1);
+            FindValueForNextCell(0, -1);
             var numbers = new List<int> { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
 
             if (radioButton1.Checked)
@@ -62,66 +72,71 @@ namespace Sudoku
                 {
                     int r = numbers[random.Next(0, numbers.Count)];
                     int p = numbers[random.Next(0, numbers.Count)];
-                    cells[r, p].Text = String.Empty;
-                    if (IsSolvable())
+                    
+                    if (SingleSolutionForCell(r, p))
                     {
+                        cells[r, p].Text = String.Empty;
                         cells[r, p].KeyPress += KeyPressed;
                         cells[r, p].IsLocked = false;
-                    }
-                    else
-                    {
-                        cells[r, p].Text = cells[r, p].Value.ToString();
                     }
                 }
             }
-        
 
-            if(radioButton2.Checked)
-            {  
-                for (int n = 0; n < 50; n++)
-                { 
-                int r = numbers[random.Next(0, numbers.Count)];
-                int p = numbers[random.Next(0, numbers.Count)];
-                cells[r, p].Text = String.Empty;
-                    if (IsSolvable())
+            if (radioButton2.Checked)
+            {
+                for (int n = 0; n < 10000; n++)
+                {
+                    int r = numbers[random.Next(0, numbers.Count)];
+                    int p = numbers[random.Next(0, numbers.Count)];
+                    
+                    if (SingleSolutionForCell(r, p))
                     {
                         cells[r, p].KeyPress += KeyPressed;
                         cells[r, p].IsLocked = false;
+                        cells[r, p].Text = String.Empty;
                     }
-                    else
-                    {
-                        cells[r, p].Text = cells[r, p].Value.ToString();
-                    }
-                    }
-                } 
+                }
             }
+        }
 
-        private bool IsSolvable()
+        private bool SingleSolutionForCell(int i, int j)
         {
             int count = 0;
-            for (int i = 0; i < 9; i++)
+            for (int m = 1; m <= 9; m++)
             {
-                for (int j = 0; j < 9; j++)
+                if (IsValidSolution(m, i, j))
                 {
-                    if (cells[i, j].Text == String.Empty)
-                    {
-                        for (int m = 1; m <= 9; m++)
-                        {
-                            if (IsValidNumber(m, i, j))
-                            {
-                                count++;
-                            }
-                        }
-                        if (count == 1)
-                            return true;
-                    }
-                    count = 0;
+                    count++;
                 }
             }
-            return false;
-
+            if (count == 1)
+                return true;
+            else
+                return false;
         }
-        private bool findValueForNextCell(int i, int j)
+
+        private bool IsValidSolution(int value, int x, int y)
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                if (i != y && cells[x, i].Text == value.ToString())
+                    return false;
+
+                if (i != x && cells[i, y].Text == value.ToString())
+                    return false;
+            }
+
+            for (int i = x - (x % 3); i < x - (x % 3) + 3; i++)
+            {
+                for (int j = y - (y % 3); j < y - (y % 3) + 3; j++)
+                {
+                    if (i != x && j != y && cells[i, j].Text == value.ToString())
+                        return false;
+                }
+            }
+            return true;
+        }
+        private bool FindValueForNextCell(int i, int j)
         {
             if (++j > 8)
             {
@@ -150,7 +165,7 @@ namespace Sudoku
 
                 numsLeft.Remove(value);
             }
-            while (!IsValidNumber(value, i, j) || !findValueForNextCell(i, j));
+            while (!IsValidNumber(value, i, j) || !FindValueForNextCell(i, j));
 
             return true;
         }
@@ -189,7 +204,11 @@ namespace Sudoku
                 }
             }
 
-            if (wrongCells.Any())
+            if(showSolutionCount > 0)
+            {
+                MessageBox.Show("You already checked the solution. Try a new game!");
+            }
+            else if (wrongCells.Any())
             {
                 wrongCells.ForEach(x => x.ForeColor = Color.Red);
                 MessageBox.Show("Wrong inputs are marked in red");
@@ -221,6 +240,7 @@ namespace Sudoku
                     cell.ForeColor = Color.Blue;
                 }
             }
+            showSolutionCount++;
         }
 
         private void NewGame_Click(object sender, EventArgs e)
@@ -229,7 +249,7 @@ namespace Sudoku
             {
                 cell.Clear();
             }
-
+            showSolutionCount = 0;
             NewGame();
         }
     }

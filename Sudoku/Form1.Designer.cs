@@ -1,4 +1,6 @@
-﻿namespace Sudoku
+﻿using System.Drawing;
+
+namespace Sudoku
 {
     partial class Form1
     {
@@ -28,6 +30,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.BackColor = Color.Black;
             this.panel1 = new System.Windows.Forms.Panel();
             this.button17 = new System.Windows.Forms.Button();
             this.button18 = new System.Windows.Forms.Button();
@@ -53,6 +56,7 @@
             this.button17.TabIndex = 1;
             this.button17.Text = "Check";
             this.button17.UseVisualStyleBackColor = true;
+            this.button17.BackColor = Color.LightSteelBlue;
             this.button17.Click += new System.EventHandler(this.CheckButton_Click);
             // 
             // button18
@@ -63,6 +67,7 @@
             this.button18.TabIndex = 2;
             this.button18.Text = "Clear All";
             this.button18.UseVisualStyleBackColor = true;
+            this.button18.BackColor = Color.LightSteelBlue;
             this.button18.Click += new System.EventHandler(this.ClearButton_Click);
             // 
             // button19
@@ -73,6 +78,7 @@
             this.button19.TabIndex = 3;
             this.button19.Text = "Show solution";
             this.button19.UseVisualStyleBackColor = true;
+            this.button19.BackColor = Color.LightSteelBlue;
             this.button19.Click += new System.EventHandler(this.ShowSolution_Click);
             // 
             // radioButton1
@@ -85,7 +91,7 @@
             this.radioButton1.TabIndex = 6;
             this.radioButton1.TabStop = true;
             this.radioButton1.Text = "Begginer";
-            this.radioButton1.UseVisualStyleBackColor = true;
+            this.radioButton1.ForeColor = Color.LightSteelBlue;
             // 
             // radioButton2
             // 
@@ -96,7 +102,7 @@
             this.radioButton2.TabIndex = 7;
             this.radioButton2.TabStop = true;
             this.radioButton2.Text = "Advanced";
-            this.radioButton2.UseVisualStyleBackColor = true;
+            this.radioButton2.ForeColor = Color.LightSteelBlue;
             // 
             // button1
             // 
@@ -106,6 +112,7 @@
             this.button1.TabIndex = 8;
             this.button1.Text = "New Game";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.BackColor = Color.RosyBrown;
             this.button1.Click += new System.EventHandler(this.NewGame_Click);
             // 
             // Form1
